@@ -1,0 +1,24 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="live.ditto.inventory.MainActivity">
+    <item
+        android:id="@+id/show_information_view"
+        android:title="@string/show_info_view"
+        app:showAsAction="never" />
+<!--
+    <item
+        android:id="@+id/show_connections_view"
+        android:title="@string/show_connections_view"
+        app:showAsAction="never" />
+-->
+    <item
+        android:id="@+id/search_inventory"
+        android:title="Search Inventory"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/show_ditto_tools"
+        android:title="@string/show_presence_view"
+        app:showAsAction="never" />
+</menu>
