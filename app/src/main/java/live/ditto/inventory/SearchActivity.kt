@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import live.ditto.DittoDocument
 import live.ditto.DittoLiveQuery
 import live.ditto.DittoLiveQueryEvent
+import live.ditto.inventory.DittoManager.parseDocumentsToItemModel
 
 class SearchActivity : AppCompatActivity() {
     private lateinit var searchView: SearchView
@@ -86,13 +87,18 @@ class SearchActivity : AppCompatActivity() {
 
         val collection = DittoManager.ditto?.store?.collection("inventories")
 
-        val query = collection?.find("title LIKE '%c%' OR description LIKE '%c%'")
+        val sanitizedSearchText = searchText?.replace("\"", "\\\"") ?: "" // Escape quotes if needed
+
+        val query = collection?.find(
+            "(contains(name, '$sanitizedSearchText') || contains(description, '$sanitizedSearchText'))"
+        )
 
         try {
             liveQuery = query?.observeLocal { docs, event ->
                 docs.forEach { doc ->
                     Log.d("Ditto", "🔍 Raw Document: ${doc.toString()}")
                 }
+                updateSearchResults(docs)
             }
         } catch (e: Exception) {
             Log.e("SearchActivity", "Error executing query: ${e.message}", e)
@@ -108,18 +114,7 @@ class SearchActivity : AppCompatActivity() {
     private fun updateSearchResults(docs: List<DittoDocument>) {
         Log.d("SearchActivity", "Updating search results. Document count: ${docs.size}")
 
-        val matchingItems = mutableListOf<ItemModel>()
-
-        // Map documents to ItemModel objects
-        for (doc in docs) {
-            // Convert string ID to integer safely
-            val itemId = doc.id.toString().toIntOrNull() ?: continue
-            val item = getItemById(itemId)
-            item?.let {
-                it.count = doc["counter"].intValue
-                matchingItems.add(it)
-            }
-        }
+        val matchingItems = parseDocumentsToItemModel(docs)
 
         runOnUiThread {
             if (matchingItems.isEmpty()) {
@@ -128,13 +123,9 @@ class SearchActivity : AppCompatActivity() {
             } else {
                 noResultsTextView.visibility = View.GONE
                 resultsRecyclerView.visibility = View.VISIBLE
-                itemsAdapter.setInitial(matchingItems)
+                itemsAdapter.setItems(matchingItems)
             }
         }
-    }
-
-    private fun getItemById(itemId: Int): ItemModel? {
-        return DittoManager.getItemsForView().find { it.itemId == itemId }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

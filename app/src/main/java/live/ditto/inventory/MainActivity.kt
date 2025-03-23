@@ -194,6 +194,14 @@ class ItemsAdapter : RecyclerView.Adapter<ItemsAdapter.ItemViewHolder>() {
         return this.items
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    fun setItems(items: List<ItemModel>) {
+        this.items.clear()
+        this.items.addAll(items)
+        notifyDataSetChanged()
+    }
+
+
     private fun formatMoney(price: Double): String {
         val formatter = NumberFormat.getCurrencyInstance()
         with(formatter) {
