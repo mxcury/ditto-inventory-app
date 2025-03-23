@@ -87,7 +87,7 @@ class SearchActivity : AppCompatActivity() {
 
         val collection = DittoManager.ditto?.store?.collection("inventories")
 
-        val sanitizedSearchText = searchText?.replace("\"", "\\\"") ?: "" // Escape quotes if needed
+        val sanitizedSearchText = searchText?.replace("\"", "\\\"") ?: ""
 
         val query = collection?.find(
             "(contains(name, '$sanitizedSearchText') || contains(description, '$sanitizedSearchText'))"

@@ -68,15 +68,17 @@ object DittoManager {
 //        insertDefaultDataIfAbsent()
     }
 
-    internal fun increment(itemId: Int) {
+    internal fun increment(itemId: String) {
         collection?.findById(itemId)?.update {
-            it?.get("counter")?.counter?.increment(1.0)
+            val currentCount = it?.get("count")?.intValue ?: 0
+            it?.get("count")?.set(currentCount + 1)
         }
     }
 
-    internal fun decrement(itemId: Int) {
+    internal fun decrement(itemId: String) {
         collection?.findById(itemId)?.update {
-            it?.get("counter")?.counter?.increment(-1.0)
+            val currentCount = it?.get("count")?.intValue ?: 0
+            it?.get("count")?.set(currentCount - 1)
         }
     }
 
@@ -120,7 +122,7 @@ object DittoManager {
                 is DittoLiveQueryEvent.Update -> {
                     event.updates.forEach { index ->
                         val doc = docs[index]
-                        val count = doc["counter"].intValue
+                        val count = doc["count"].intValue
 
                         itemUpdateListener.updateCount(index, count)
                     }
@@ -140,7 +142,7 @@ object DittoManager {
     fun parseDocumentsToItemModel(docs: List<DittoDocument>): List<ItemModel> {
         return docs.map { doc ->
             ItemModel(
-                itemId = doc["_id"].hashCode(),
+                itemId = doc["_id"].stringValue,
                 image = getImageResource(doc["image"].stringValue),
                 title = doc["name"].stringValue,
                 price = doc["price"].doubleValue,

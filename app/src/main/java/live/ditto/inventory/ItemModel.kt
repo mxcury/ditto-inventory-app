@@ -1,7 +1,7 @@
 package live.ditto.inventory
 
 class ItemModel(
-    val itemId: Int,
+    val itemId: String,
     val image: Int,
     val title: String,
     val price: Double,
