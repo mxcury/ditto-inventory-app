@@ -3,7 +3,6 @@ package live.ditto.inventory
 import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
-import android.content.ClipData.Item
 import android.content.Intent
 import android.graphics.Color
 import android.icu.text.NumberFormat

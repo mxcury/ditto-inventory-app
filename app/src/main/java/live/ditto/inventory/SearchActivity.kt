@@ -1,16 +1,9 @@
 package live.ditto.inventory
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
@@ -19,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import live.ditto.DittoDocument
 import live.ditto.DittoLiveQuery
-import live.ditto.DittoLiveQueryEvent
 import live.ditto.inventory.DittoManager.parseDocumentsToItemModel
 
 class SearchActivity : AppCompatActivity() {
@@ -28,7 +20,6 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var noResultsTextView: TextView
     private lateinit var itemsAdapter: ItemsAdapter
     private var liveQuery: DittoLiveQuery? = null
-    private val searchHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,11 +80,11 @@ class SearchActivity : AppCompatActivity() {
 
         val sanitizedSearchText = searchText?.replace("\"", "\\\"") ?: ""
 
-        val query = collection?.find(
-            "(contains(name, '$sanitizedSearchText') || contains(description, '$sanitizedSearchText'))"
-        )
-
         try {
+            val query = collection?.find(
+                "(contains(name, '$sanitizedSearchText') || contains(description, '$sanitizedSearchText'))"
+            )
+
             liveQuery = query?.observeLocal { docs, event ->
                 docs.forEach { doc ->
                     Log.d("Ditto", "🔍 Raw Document: ${doc.toString()}")

@@ -58,14 +58,11 @@ object DittoManager {
             // Disable avoid_redundant_bluetooth
             ditto?.store?.execute("ALTER SYSTEM SET mesh_chooser_avoid_redundant_bluetooth = false")
             ditto?.startSync()
+            collection = ditto?.store?.collection(COLLECTION_NAME)
+            observeItems()
         } catch (e: Exception) {
             Log.e(e.message, e.localizedMessage)
         }
-
-        collection = ditto?.store?.collection(COLLECTION_NAME)
-
-        observeItems()
-//        insertDefaultDataIfAbsent()
     }
 
     internal fun increment(itemId: String) {
@@ -88,42 +85,22 @@ object DittoManager {
 
     /* Private functions and properties */
 
-//    private fun insertDefaultDataIfAbsent() {
-//
-//        ditto?.store?.write { transaction ->
-//            val scope = transaction.scoped(COLLECTION_NAME)
-//
-//            for (viewItem in itemsForView) {
-//                val doc = collection?.findById(viewItem.itemId)?.exec()
-//
-//                if (doc == null) {
-//                    scope.upsert(mapOf("_id" to viewItem.itemId, "counter" to DittoCounter()), writeStrategy = DittoWriteStrategy.InsertDefaultIfAbsent)
-//                } else {
-//                    viewItem.count = doc["counter"].intValue
-//                }
-//            }
-//        }
-//    }
-
     private fun observeItems() {
         val query = collection?.findAll()
 
-        subscription =  ditto?.sync?.registerSubscription(query = "SELECT * FROM inventories")
+        subscription = ditto?.sync?.registerSubscription(query = "SELECT * FROM inventories")
 
         liveQuery = query?.observeLocal { docs, event ->
+            val itemsFromDitto = parseDocumentsToItemModel(docs)
+            itemUpdateListener.setInitial(itemsFromDitto)
 
             when (event) {
-
-                is DittoLiveQueryEvent.Initial -> {
-                    val itemsFromDitto = parseDocumentsToItemModel(docs)
-                    itemUpdateListener.setInitial(itemsFromDitto)
-                }
+                is DittoLiveQueryEvent.Initial -> {}
 
                 is DittoLiveQueryEvent.Update -> {
                     event.updates.forEach { index ->
                         val doc = docs[index]
                         val count = doc["count"].intValue
-
                         itemUpdateListener.updateCount(index, count)
                     }
                 }
@@ -131,13 +108,6 @@ object DittoManager {
         }
     }
 
-//    private val itemsForView = arrayOf(
-//        ItemModel(0, R.drawable.coke, "Coca-Cola", 2.50, "A Can of Coca-Cola"),
-//        ItemModel(1, R.drawable.drpepper, "Dr. Pepper", 2.50, "A Can of Dr. Pepper"),
-//        ItemModel(2,R.drawable.lays, "Lay's Classic", 3.99, "Original Classic Lay's Bag of Chips"),
-//        ItemModel(3, R.drawable.brownies, "Brownies", 6.50,"Brownies, Diet Sugar Free Version"),
-//        ItemModel(4, R.drawable.blt, "Classic BLT Egg", 2.50, "Contains Egg, Meats and Dairy")
-//    )
 
     fun parseDocumentsToItemModel(docs: List<DittoDocument>): List<ItemModel> {
         return docs.map { doc ->
